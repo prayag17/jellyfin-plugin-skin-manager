@@ -146,7 +146,7 @@
                 var css = option.css;
                 var description = option.description;
 
-                //html += '<label><input is="emby-checkbox" class="chkLibrary" type="checkbox" data-mini="true" id="' + id + '" name="' + id + '" data-value="' + value + '" '+' /><span>' + name  + '</span></label>';
+                //html += '<label><input is="emby-checkbox" class="chkLibrary" type="checkbox" dagetSubOptions(option)ta-mini="true" id="' + id + '" name="' + id + '" data-value="' + value + '" '+' /><span>' + name  + '</span></label>';
                 html +=
                     '<div class="checkboxContainer checkboxContainer-withDescription"><label><input class = "checkbox" type="checkbox" is="emby-checkbox" id="' +
                     id +
@@ -162,7 +162,7 @@
                     getToolTip(option) +
                     '</label><div class="fieldDescription checkboxFieldDescription">' +
                     description +
-                    "</div></div>";
+                    "</div>" + getSubOptions(option) + "</div>";
                 return html;
             }
             var colorPickers = {};
@@ -197,7 +197,7 @@
                     name +
                     '<div class="fieldDescription">' +
                     description +
-                    "</div></div>";
+                    "</div>" + getSubOptions(option) + "</div>";
                 return html;
             }
 
@@ -226,7 +226,7 @@
                     name +
                     '" /><div class="fieldDescription">' +
                     description +
-                    "</div></div>";
+                    "</div>" + getSubOptions(option) + "</div>";
                 return html;
             }
 
@@ -245,7 +245,7 @@
                     name +
                     '">' +
                     getOptions(option, saved) +
-                    "</select></div>";
+                    "</select>" + getSubOptionsForSelector(option) + "</div>";
                 return html;
             }
             var savedGoogleFont;
@@ -262,7 +262,7 @@
                 //html += '<div class = "fontPreview"> This is a preview </div>';
                 //html += '<div id="font-picker"></div><div class = "apply-font"> This is a preview </div>'
                 //html += '	<div class="selectContainer"><label>Change Font </label><br> <input id="font-picker" type="text"> </div>';
-                html += '<div class="selectContainer"><label>Change Font </label><br> <input class="fonts" data-css= "' + option.css + '">'
+                html += '<div class="selectContainer"><label>Change Font </label><br> <input class="fonts" data-css="' + option.css + '">' + getSubOptions(option) + '';
                 if (saved != undefined) {
                     savedGoogleFont = saved;
                 }
@@ -297,7 +297,7 @@
                         selected +
                         ">" +
                         name +
-                        "</option>";
+                        "</option>" + getSubOptions(option) + "";
                 });
                 return html;
             }
@@ -316,8 +316,7 @@
                     '<input type="range" class="slider" value="' + defaultValue + '" step="' + step + '" data-css="' + css + '" id="' + id + '" name="' + id + '"  min="0" max="300" label="' + name + '">' +
                     '<div class="fieldDescription">' +
                     description +
-                    +'</div>' +
-                    '</div>';
+                    +'</div>' + getSubOptions(option) + '</div>';
                 return html;
             }
 
@@ -393,6 +392,66 @@
                 return html;
             }
 
+            function getSubOptions(option) {
+                html = "";
+                var subop = option.suboption;
+                //if (subop!=undefined){}
+                if (typeof subop != 'undefined') {
+                    subop.forEach((element) => {
+                        var subname = element.name;
+                        var subval = element.css;
+                        var subtype = element.type;
+                        switch (subtype) {
+                            case "checkBox":
+                                html += '<div class="inputContainer"><label><span>' + subname + '</span></label><input type="checkbox" data-css="' + subval + '" </div>'
+                            case "number":
+                                html += '<div class="inputContainer"><label><span>' + subname + '</span></label><input type="number" data-css="' + subval + '" </div>'
+                            case "slider":
+                                html += '<div class="inputContainer"><label><span>' + subname + '</span></label><input type="range" class="slider" min="0" max="300" data-css="' + subval + '" </div>'
+                            case "colorPickers":
+                                var submode = element.mode;
+                                html += '<div class="inputContainer"><label>' + subname + '</label><input class="color" type="text" value="' + defaultValue + '" data-css="' + css + '" data-mode="' + mode + '" </div>"';
+                            case "none":
+                                html += '';
+                            default:
+                                html += '';
+                        }
+                    })
+                } else if (typeof subop != 'undefined') {
+                    html += "<div></div>"
+                }
+            }
+
+            function getSubOptionsForSelector(option) {
+                html = "";
+                var op = option.selections;
+                var subop = op.suboption;
+                if (typeof subop != 'undefined') {
+                    subop.forEach((element) => {
+                        var subname = element.name;
+                        var subval = element.css;
+                        var subtype = element.type;
+                        switch (subtype) {
+                            case "checkBox":
+                                html += '<div class="inputContainer"><label><span>' + subname + '</span></label><input type="checkbox" data-css="' + subval + '" </div>'
+                            case "number":
+                                html += '<div class="inputContainer"><label><span>' + subname + '</span></label><input type="number" data-css="' + subval + '" </div>'
+                            case "slider":
+                                html += '<div class="inputContainer"><label><span>' + subname + '</span></label><input type="range" class="slider" min="0" max="300" data-css="' + subval + '" </div>'
+                            case "colorPickers":
+                                var submode = element.mode;
+                                html += '<div class="inputContainer"><label>' + subname + '</label><input class="color" type="text" value="' + defaultValue + '" data-css="' + css + '" data-mode="' + mode + '" </div>"';
+                            case "none":
+                                html += '';
+                            default:
+                                html += '';
+                        }
+                    })
+                } else if (typeof subop != 'undefined') {
+                    html += '<div></div>'
+                }
+            }
+
             async function createCss() {
 
                 var savedHtml = "";
@@ -415,9 +474,9 @@
                 var selectors = document.getElementsByClassName("selector");
                 for (var i = 0; i < selectors.length; i++) {
                     var element = selectors[i]
-                    if(checkForImport(element.selectedOptions[0].value)){
+                    if (checkForImport(element.selectedOptions[0].value)) {
                         css = element.selectedOptions[0].value + "\n" + css
-                    }else{
+                    } else {
                         css +=
                             element.selectedOptions[0].value +
                             "\n";
@@ -482,7 +541,7 @@
 
             }
 
-            function checkForImport(css){
+            function checkForImport(css) {
                 return css.includes("@import")
             }
 
